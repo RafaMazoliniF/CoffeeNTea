@@ -1,4 +1,4 @@
-#include "chardev.h"
+#include "kfetch.h"
 
 #define DEVICE_NAME "chardev" /* Dev name as it appears in /proc/devices */
 #define BUF_LEN 80            /* Max length of the message from the device */
