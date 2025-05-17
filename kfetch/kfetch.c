@@ -1,35 +1,33 @@
 #include "kfetch.h"
 
-#define DEVICE_NAME "chardev" /* Dev name as it appears in /proc/devices */
+#define DEVICE_NAME "kfetch"  /* Dev name as it appears in /proc/devices */
 #define BUF_LEN 80            /* Max length of the message from the device */
-
-/* Global variables are declared as static, so are global within the file. */
 
 static int major; /* major number assigned to our device driver */
 
 enum
 {
-    CDEV_NOT_USED,
-    CDEV_EXCLUSIVE_OPEN,
+    KFETCH_NOT_USED,
+    KFTECH_EXCLUSIVE_OPEN,
 };
 
 /* Is device open? Used to prevent multiple access to device */
-static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_USED);
+static atomic_t already_open = ATOMIC_INIT(KFETCH_NOT_USED);
 
 static char msg[BUF_LEN + 1]; /* The msg the device will give when asked */
 
 static struct class *cls;
 
-static struct file_operations chardev_fops = {
-    .read = device_read,
-    .write = device_write,
-    .open = device_open,
-    .release = device_release,
+static struct file_operations kfetch_fops = {
+    .read = kfetch_read,
+    .write = kfetch_write,
+    .open = kfetch_open,
+    .release = kfetch_release,
 };
 
-static int __init chardev_init(void)
+static int __init kfetch_init(void)
 {
-    major = register_chrdev(0, DEVICE_NAME, &chardev_fops);
+    major = register_chrdev(0, DEVICE_NAME, &kfetch_fops);
 
     if (major < 0)
     {
@@ -47,7 +45,7 @@ static int __init chardev_init(void)
     return 0;
 }
 
-static void __exit chardev_exit(void)
+static void __exit kfetch_exit(void)
 {
     device_destroy(cls, MKDEV(major, 0));
     class_destroy(cls);
@@ -56,24 +54,68 @@ static void __exit chardev_exit(void)
     unregister_chrdev(major, DEVICE_NAME);
 }
 
-
-// Called when a process tries to open the device file
-static int device_open(struct inode *inode, struct file *file)
+// Called when a process tries to open the device file: get message string
+static int kfetch_open(struct inode *inode, struct file *file)
 {
-    if (atomic_cmpxchg(&already_open, CDEV_NOT_USED, CDEV_EXCLUSIVE_OPEN))
+
+    // Concurrency protection: only opens if is not been used
+    if (atomic_cmpxchg(&already_open, KFETCH_NOT_USED, KFTECH_EXCLUSIVE_OPEN))
         return -EBUSY;
 
-    sprintf(msg, "I already told you %d times Hello world!\n", counter++);
+    // Hostname + "---" strings
+    size_t hostname_len = strnlen("hostname: \n", 20) + strnlen(init_uts_ns.name.nodename, 80);
+
+    char *dashes = kmalloc(hostname_len * sizeof(char), GFP_KERNEL); //Dynamic alloc for dashes
+    if (!dashes) {
+        pr_err("Kmalloc failed!\n");
+        return -ENOMEM;
+    }
+
+    memset(dashes, '-', hostname_len - 1); //Fill with dashes
+    dashes[hostname_len - 1] = '\0'; // End of string
+
+    //Mem info
+    struct sysinfo mi;
+    si_meminfo(&mi);
+
+    sprintf(msg, 
+        "         {\n"
+        "      {   }\n"
+        "       }_{ __{\n"
+        "    .-{   }   }-.\n"
+        "   (   }     {   )         Hostname: %s\n"
+        "   |`-.._____..-'|         %s\n"
+        "   |             ;--.      Kernel: %s\n"
+        "   |            (__  \\     CPU: %s\n"
+        "   |             | )  )    CPUs: %d/%d\n"
+        "   |             |/  /     Mem: %lu MB / %lu MB\n"
+        "   |             /  /\n"
+        "   |            (  /\n"
+        "   \\             y'\n"
+        "    `-.._____..-'\n",
+        init_uts_ns.name.nodename, 
+        dashes, 
+        init_uts_ns.name.release,
+        cpu_data(0).x86_model_id,
+        num_online_cpus(),
+        num_possible_cpus(),
+        (mi.totalram - mi.freeram) / 1024,
+        mi.totalram / 1024
+    );
+
+
+    kfree(dashes);
+
     try_module_get(THIS_MODULE);
 
     return 0;
 }
 
 /* Called when a process closes the device file. */
-static int device_release(struct inode *inode, struct file *file)
+static int kfetch_release(struct inode *inode, struct file *file)
 {
     /* We're now ready for our next caller */
-    atomic_set(&already_open, CDEV_NOT_USED);
+    atomic_set(&already_open, KFETCH_NOT_USED);
 
     module_put(THIS_MODULE);
 
@@ -81,7 +123,7 @@ static int device_release(struct inode *inode, struct file *file)
 }
 
 // Called when a process tries to read the device file
-static ssize_t device_read(struct file *filp, 
+static ssize_t kfetch_read(struct file *filp, 
                            char __user *buffer,
                            size_t length,   
                            loff_t *offset)
@@ -113,14 +155,14 @@ static ssize_t device_read(struct file *filp,
 }
 
 // Called when a process writes to dev file
-static ssize_t device_write(struct file *filp, const char __user *buff,
+static ssize_t kfetch_write(struct file *filp, const char __user *buff,
                             size_t len, loff_t *off)
 {
     pr_alert("Sorry, this operation is not supported.\n");
     return -EINVAL;
 }
 
-module_init(chardev_init);
-module_exit(chardev_exit);
+module_init(kfetch_init);
+module_exit(kfetch_exit);
 
 MODULE_LICENSE("GPL");

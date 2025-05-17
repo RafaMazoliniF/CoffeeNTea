@@ -9,13 +9,17 @@
 #include <linux/init.h>
 #include <linux/kernel.h> 
 #include <linux/module.h>
-#include <linux/printk.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
 #include <linux/utsname.h>
-
-#include <asm/errno.h>
+#include <linux/string.h>
+#include <linux/mm.h>
+#include <linux/vmstat.h>
+#include <linux/sysinfo.h>
+#include <linux/errno.h>
+#include <asm/processor.h>
+#include <linux/smp.h>
 
 static int kfetch_open(struct inode *, struct file *);
 static int kfetch_release(struct inode *, struct file *);
