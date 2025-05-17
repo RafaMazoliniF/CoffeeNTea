@@ -25,6 +25,17 @@ static struct file_operations kfetch_fops = {
     .release = kfetch_release,
 };
 
+//nr_threads or nr_processes() are not defined for a kernel module
+static int count_processes(void) {
+    struct task_struct *task;
+    int count = 0;
+
+    for_each_process(task) {
+        count++;
+    }
+    return count;
+}
+
 static int __init kfetch_init(void)
 {
     major = register_chrdev(0, DEVICE_NAME, &kfetch_fops);
@@ -78,6 +89,8 @@ static int kfetch_open(struct inode *inode, struct file *file)
     struct sysinfo mi;
     si_meminfo(&mi);
 
+#define K(x) ((x) << (PAGE_SHIFT - 10)) // Turn pagesized info to KB (as seen in fs/proc/meminfo)
+
     sprintf(msg, 
         "         {\n"
         "      {   }\n"
@@ -89,18 +102,19 @@ static int kfetch_open(struct inode *inode, struct file *file)
         "   |            (__  \\     CPU: %s\n"
         "   |             | )  )    CPUs: %d/%d\n"
         "   |             |/  /     Mem: %lu MB / %lu MB\n"
-        "   |             /  /\n"
+        "   |             /  /      Proc: %d\n"
         "   |            (  /\n"
         "   \\             y'\n"
         "    `-.._____..-'\n",
-        init_uts_ns.name.nodename, 
-        dashes, 
-        init_uts_ns.name.release,
-        cpu_data(0).x86_model_id,
-        num_online_cpus(),
-        num_possible_cpus(),
-        (mi.totalram - mi.freeram) / 1024,
-        mi.totalram / 1024
+        init_uts_ns.name.nodename,          //Hostname
+        dashes,                             //Div
+        init_uts_ns.name.release,           //kernel version
+        cpu_data(0).x86_model_id,           //CPU model name
+        num_online_cpus(),                  //CPU used
+        num_possible_cpus(),                //Total CPU
+        K(mi.totalram - mi.freeram) / 1024, //Used RAM in MB
+        K(mi.totalram) / 1024,              //Total RAM in MB
+        count_processes()
     );
 
 

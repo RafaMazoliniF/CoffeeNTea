@@ -20,10 +20,15 @@
 #include <linux/errno.h>
 #include <asm/processor.h>
 #include <linux/smp.h>
+#include <linux/sched/signal.h>
+#include <linux/sched.h>
 
 static int kfetch_open(struct inode *, struct file *);
 static int kfetch_release(struct inode *, struct file *);
 static ssize_t kfetch_read(struct file *, char __user *, size_t, loff_t *);
 static ssize_t kfetch_write(struct file *, const char __user *, size_t, loff_t *);
+
+static int count_processes(void);
+
 
 #endif
