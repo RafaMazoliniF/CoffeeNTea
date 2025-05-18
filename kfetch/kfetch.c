@@ -1,7 +1,7 @@
 #include "kfetch.h"
 
 #define DEVICE_NAME "kfetch"  /* Dev name as it appears in /proc/devices */
-#define BUF_LEN 80            /* Max length of the message from the device */
+#define MSG_MAX_LEN 2048      /* Max length of the message from the device */
 
 static int major; /* major number assigned to our device driver */
 
@@ -14,7 +14,7 @@ enum
 /* Is device open? Used to prevent multiple access to device */
 static atomic_t already_open = ATOMIC_INIT(KFETCH_NOT_USED);
 
-static char msg[BUF_LEN + 1]; /* The msg the device will give when asked */
+static char msg[MSG_MAX_LEN + 1]; /* The msg the device will give when asked */
 
 static struct class *cls;
 
@@ -89,7 +89,12 @@ static int kfetch_open(struct inode *inode, struct file *file)
     struct sysinfo mi;
     si_meminfo(&mi);
 
-#define K(x) ((x) << (PAGE_SHIFT - 10)) // Turn pagesized info to KB (as seen in fs/proc/meminfo)
+    //uptime
+    struct timespec64 tp;
+    ktime_get_boottime_ts64(&tp);
+    int uptime = tp.tv_sec;
+
+#define K(x) ((x) << (PAGE_SHIFT - 10)) // Turn page-sized info to KB (as seen in fs/proc/meminfo)
 
     sprintf(msg, 
         "         {\n"
@@ -103,7 +108,7 @@ static int kfetch_open(struct inode *inode, struct file *file)
         "   |             | )  )    CPUs: %d/%d\n"
         "   |             |/  /     Mem: %lu MB / %lu MB\n"
         "   |             /  /      Proc: %d\n"
-        "   |            (  /\n"
+        "   |            (  /       Uptime: %d\n"
         "   \\             y'\n"
         "    `-.._____..-'\n",
         init_uts_ns.name.nodename,          //Hostname
@@ -114,7 +119,8 @@ static int kfetch_open(struct inode *inode, struct file *file)
         num_possible_cpus(),                //Total CPU
         K(mi.totalram - mi.freeram) / 1024, //Used RAM in MB
         K(mi.totalram) / 1024,              //Total RAM in MB
-        count_processes()
+        count_processes(),                  //Number of processes
+        uptime                              //Uptime in seconds
     );
 
 
@@ -171,7 +177,9 @@ static ssize_t kfetch_read(struct file *filp,
 // Called when a process writes to dev file
 static ssize_t kfetch_write(struct file *filp, const char __user *buff,
                             size_t len, loff_t *off)
-{
+{   
+
+
     pr_alert("Sorry, this operation is not supported.\n");
     return -EINVAL;
 }

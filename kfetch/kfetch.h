@@ -22,6 +22,7 @@
 #include <linux/smp.h>
 #include <linux/sched/signal.h>
 #include <linux/sched.h>
+#include <linux/timekeeping.h>
 
 static int kfetch_open(struct inode *, struct file *);
 static int kfetch_release(struct inode *, struct file *);
