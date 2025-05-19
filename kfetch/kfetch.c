@@ -181,10 +181,14 @@ static ssize_t kfetch_read(struct file *filp,
 static ssize_t kfetch_write(struct file *filp, const char __user *buff,
                             size_t len, loff_t *off)
 {   
-    if (len >= MASK_MAX_LEN) return -EINVAL;
-    if (copy_from_user(&mask, buff, len)) return -EFAULT;
+    char mask_str[10];
 
-    return 0;
+    if (len >= MASK_MAX_LEN) return -EINVAL;
+    if (copy_from_user(mask_str, buff, len)) return -EFAULT;
+
+    if (kstrtoint(mask_str, 10, &mask)) return -EINVAL;
+
+    return strnlen(mask_str, 3);
 }
 
 module_init(kfetch_init);
