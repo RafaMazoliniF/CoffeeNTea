@@ -108,52 +108,55 @@ static int kfetch_open(struct inode *inode, struct file *file)
     }
 
     //Chose only required data
-    snprintf(str_formats[0], 100, "Hostname: %s", init_uts_ns.name.nodename); // Hostname
+    snprintf(str_formats[0], 100, "\x1b[1;32mHostname: %s\x1b[0m", init_uts_ns.name.nodename); // Hostname
 
     if (mask & KFETCH_RELEASE || mask == 0) 
-        snprintf(str_formats[1], 100, "Kernel: %s", init_uts_ns.name.release); // Kernel
+        snprintf(str_formats[1], 100, "\x1b[1;34mKernel:\x1b[0m \x1b[38;5;136m%s\x1b[0m", init_uts_ns.name.release); // Kernel
     else snprintf(str_formats[1], 100, " ");
-
+    
     if (mask & KFETCH_CPU_MODEL || mask == 0) 
-        snprintf(str_formats[2], 100, "CPU: %s", cpu_data(0).x86_model_id); // CPU
+        snprintf(str_formats[2], 100, "\x1b[1;34mCPU:\x1b[0m \x1b[38;5;136m%s\x1b[0m", cpu_data(0).x86_model_id); // CPU
     else snprintf(str_formats[2], 100, " ");
-
+    
     if (mask & KFETCH_NUM_CPUS || mask == 0) 
-        snprintf(str_formats[3], 100, "CPUs: %d/%d", num_online_cpus(), num_possible_cpus()); // CPUs
+        snprintf(str_formats[3], 100, "\x1b[1;34mCPUs:\x1b[0m \x1b[38;5;136m%d/%d\x1b[0m", num_online_cpus(), num_possible_cpus()); // CPUs
     else snprintf(str_formats[3], 100, " ");
-
+    
     if (mask & KFETCH_MEM || mask == 0) 
-        snprintf(str_formats[4], 100, "Mem: %lu MB / %lu MB", K(mi.totalram - mi.freeram) / 1024, K(mi.totalram) / 1024); // Mem
+        snprintf(str_formats[4], 100, "\x1b[1;34mMem:\x1b[0m \x1b[38;5;136m%lu MB / %lu MB\x1b[0m", K(mi.totalram - mi.freeram) / 1024, K(mi.totalram) / 1024); // Mem
     else snprintf(str_formats[4], 100, " ");
-
+    
     if (mask & KFETCH_NUM_PROCS || mask == 0) 
-        snprintf(str_formats[5], 100, "Proc: %d", count_processes()); // Proc
+        snprintf(str_formats[5], 100, "\x1b[1;34mProc:\x1b[0m \x1b[38;5;136m%d\x1b[0m", count_processes()); // Proc
     else snprintf(str_formats[5], 100, " ");
-
+    
     if (mask & KFETCH_UPTIME || mask == 0) 
-        snprintf(str_formats[6], 100, "Uptime: %d min", uptime); // Proc
+        snprintf(str_formats[6], 100, "\x1b[1;34mUptime:\x1b[0m \x1b[38;5;136m%d min\x1b[0m", uptime); // Uptime
     else snprintf(str_formats[6], 100, " ");
+    
 
     //Sorts the output
     select_chosen_data(str_formats);
 
     //The final message
     snprintf(msg, sizeof(msg),
-        "\n\n"
+        "\n"
         "         {\n"
         "      {   }\n"
-        "       }_{ __{\n"
-        "    .-{   }   }-.\n"
-        "   (   }     {   )         %s\n"
-        "   |`-.._____..-'|         %s\n"
-        "   |             ;--.      %s\n"
-        "   |            (__  \\     %s\n"
-        "   |             | )  )    %s\n"
-        "   |             |/  /     %s\n"
-        "   |             /  /      %s\n"
-        "   |            (  /       %s\n"
-        "   \\             y'\n"
-        "    `-.._____..-'\n\n\n",
+        "       }\x1b[36m_\x1b[0m{ \x1b[36m__\x1b[0m{\n"
+        "    \x1b[36m.-\x1b[0m{   }   }\x1b[36m-.\x1b[0m\n"
+        "   \x1b[36m(   \x1b[0m}     {   \x1b[36m)         \x1b[0m%s\n"
+        "   \x1b[36m|`-.._____..-'|         \x1b[0m%s\x1b[0m\n"
+        "   \x1b[36m|             ;--.      \x1b[0m%s\n"
+        "   \x1b[36m|            (__  \\    \x1b[0m %s\n"
+        "   \x1b[36m|             | )  )    \x1b[0m%s\n"
+        "   \x1b[36m|             |/  /     \x1b[0m%s\n"
+        "   \x1b[36m|             /  /      \x1b[0m%s\n"
+        "   \x1b[36m|            (  /       \x1b[0m%s\n"
+        "   \x1b[36m\\             y'\n"
+        "   \x1b[36m `-.._____..-'\n"
+        "\x1b[0m"  // reset de cor
+        "\n",
         str_formats[0],
         dashes,
         str_formats[1],
@@ -163,7 +166,6 @@ static int kfetch_open(struct inode *inode, struct file *file)
         str_formats[5],
         str_formats[6]
     );
-
 
     //Clean
     kfree(dashes);
