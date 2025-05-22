@@ -12,6 +12,12 @@
 #define KFETCH_UPTIME    (1 << 5)
 #define KFETCH_FULL_INFO    0
 
+#define BOLD_BLUE     "\x1b[1;34m"  
+#define BOLD_GREEN     "\x1b[1;32m"
+#define CYAN     "\x1b[36m"
+#define YELLOW     "\x1b[38;5;143m"
+#define RESET     "\x1b[0m"
+
 static int major; // major number assigned to our device driver 
 
 enum
@@ -108,55 +114,55 @@ static int kfetch_open(struct inode *inode, struct file *file)
     }
 
     //Chose only required data
-    snprintf(str_formats[0], 100, "\x1b[1;32mHostname: %s\x1b[0m", init_uts_ns.name.nodename); // Hostname
+    snprintf(str_formats[0], 100, BOLD_GREEN "Hostname: %s" RESET, init_uts_ns.name.nodename); // Hostname
 
     if (mask & KFETCH_RELEASE || mask == 0) 
-        snprintf(str_formats[1], 100, "\x1b[1;34mKernel:\x1b[0m \x1b[38;5;136m%s\x1b[0m", init_uts_ns.name.release); // Kernel
+        snprintf(str_formats[1], 100, BOLD_BLUE "Kernel: " YELLOW "%s" RESET, init_uts_ns.name.release); // Kernel
     else snprintf(str_formats[1], 100, " ");
     
     if (mask & KFETCH_CPU_MODEL || mask == 0) 
-        snprintf(str_formats[2], 100, "\x1b[1;34mCPU:\x1b[0m \x1b[38;5;136m%s\x1b[0m", cpu_data(0).x86_model_id); // CPU
+        snprintf(str_formats[2], 100, BOLD_BLUE "CPU: " YELLOW "%s" RESET, cpu_data(0).x86_model_id); // CPU
     else snprintf(str_formats[2], 100, " ");
     
     if (mask & KFETCH_NUM_CPUS || mask == 0) 
-        snprintf(str_formats[3], 100, "\x1b[1;34mCPUs:\x1b[0m \x1b[38;5;136m%d/%d\x1b[0m", num_online_cpus(), num_possible_cpus()); // CPUs
+        snprintf(str_formats[3], 100, BOLD_BLUE "CPUs: " YELLOW "%d/%d" RESET, num_online_cpus(), num_possible_cpus()); // CPUs
     else snprintf(str_formats[3], 100, " ");
     
     if (mask & KFETCH_MEM || mask == 0) 
-        snprintf(str_formats[4], 100, "\x1b[1;34mMem:\x1b[0m \x1b[38;5;136m%lu MB / %lu MB\x1b[0m", K(mi.totalram - mi.freeram) / 1024, K(mi.totalram) / 1024); // Mem
+        snprintf(str_formats[4], 100, BOLD_BLUE "Mem: " YELLOW "%lu MB / %lu MB" RESET, K(mi.totalram - mi.freeram) / 1024, K(mi.totalram) / 1024); // Mem
     else snprintf(str_formats[4], 100, " ");
     
     if (mask & KFETCH_NUM_PROCS || mask == 0) 
-        snprintf(str_formats[5], 100, "\x1b[1;34mProc:\x1b[0m \x1b[38;5;136m%d\x1b[0m", count_processes()); // Proc
+        snprintf(str_formats[5], 100, BOLD_BLUE "Proc: " YELLOW "%d" RESET, count_processes()); // Proc
     else snprintf(str_formats[5], 100, " ");
     
     if (mask & KFETCH_UPTIME || mask == 0) 
-        snprintf(str_formats[6], 100, "\x1b[1;34mUptime:\x1b[0m \x1b[38;5;136m%d min\x1b[0m", uptime); // Uptime
+        snprintf(str_formats[6], 100, BOLD_BLUE "Uptime: " YELLOW "%d min" RESET, uptime); // Uptime
     else snprintf(str_formats[6], 100, " ");
     
-
     //Sorts the output
     select_chosen_data(str_formats);
 
+    const char *art_kfeti =
+    "\n"
+    "         {\n"
+    "      {   }\n"
+    "       }" CYAN "_" RESET
+    "{" RESET " " CYAN "__" RESET "{\n"
+    "    " CYAN ".-" RESET "{   }   }" CYAN "-." RESET "\n"
+    "   " CYAN "(   " RESET "}     {   " CYAN ")         " RESET "%s\n"
+    "   " CYAN "|`-.._____..-'|         " RESET "%s\n"
+    "   " CYAN "|             ;--.      " RESET "%s\n"
+    "   " CYAN "|            (__  \\     " RESET "%s\n"
+    "   " CYAN "|             | )  )    " RESET "%s\n"
+    "   " CYAN "|             |/  /     " RESET "%s\n"
+    "   " CYAN "|             /  /      " RESET "%s\n"
+    "   " CYAN "|            (  /       " RESET "%s\n"
+    "   " CYAN "\\             y'\n"
+    "   " CYAN " `-.._____..-'" RESET "\n\n";
+
     //The final message
-    snprintf(msg, sizeof(msg),
-        "\n"
-        "         {\n"
-        "      {   }\n"
-        "       }\x1b[36m_\x1b[0m{ \x1b[36m__\x1b[0m{\n"
-        "    \x1b[36m.-\x1b[0m{   }   }\x1b[36m-.\x1b[0m\n"
-        "   \x1b[36m(   \x1b[0m}     {   \x1b[36m)         \x1b[0m%s\n"
-        "   \x1b[36m|`-.._____..-'|         \x1b[0m%s\x1b[0m\n"
-        "   \x1b[36m|             ;--.      \x1b[0m%s\n"
-        "   \x1b[36m|            (__  \\    \x1b[0m %s\n"
-        "   \x1b[36m|             | )  )    \x1b[0m%s\n"
-        "   \x1b[36m|             |/  /     \x1b[0m%s\n"
-        "   \x1b[36m|             /  /      \x1b[0m%s\n"
-        "   \x1b[36m|            (  /       \x1b[0m%s\n"
-        "   \x1b[36m\\             y'\n"
-        "   \x1b[36m `-.._____..-'\n"
-        "\x1b[0m"  // reset de cor
-        "\n",
+    snprintf(msg, sizeof(msg), art_kfeti,
         str_formats[0],
         dashes,
         str_formats[1],
