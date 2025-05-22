@@ -13,19 +13,20 @@
 #include <net/sock.h>
 #include <linux/socket.h>
 
-#define PROC_NAME "mod2"
+#define PROC_NAME "tea"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Grupo 2");
-MODULE_DESCRIPTION("Modulo 2: Sistema de Pontuacao de Comportamento de Processos");
+MODULE_DESCRIPTION("Classification System of Process Behavior");
 
 // Função para exibir as estatisticas e determinar o risco de um processo 
-static int mod2_show(struct seq_file *m, void *v)
+//
+static int tea_show(struct seq_file *m, void *v)
 {
     struct task_struct *task;
 
-seq_printf(m, "%-8s | %-5s | %-9s | %-9s | %-9s | %-7s | %s\n", "PID", "'%'CPU", "SYSCALLS", "Input", "Output", "Sockets", "Risco");
-seq_printf(m, "---------+-----+-----------+-----------+-----------+----+--------\n");
+    seq_printf(m, "%-8s | %-5s | %-9s | %-9s | %-9s | %-7s | %s\n", "PID", "\%CPU", "SYSCALLS", "INPUT", "OUTPUT", "SOCKETS", "RISK");
+    seq_printf(m, "---------+-----+-----------+-----------+-----------+----+--------\n");
 
     for_each_process(task) {
         unsigned long cpu_usage = task->se.sum_exec_runtime;  
@@ -105,30 +106,30 @@ seq_printf(m, "---------+-----+-----------+-----------+-----------+----+--------
     return 0;
 }
 
-static int mod2_open(struct inode *inode, struct file *file)
+static int tea_open(struct inode *inode, struct file *file)
 {
-    return single_open(file, mod2_show, NULL);
+    return single_open(file, tea_show, NULL);
 }
 
-static const struct proc_ops mod2_fops = {
-    .proc_open = mod2_open,
+static const struct proc_ops tea_fops = {
+    .proc_open = tea_open,
     .proc_read = seq_read,
     .proc_lseek = seq_lseek,
     .proc_release = single_release,
 };
 
-static int __init mod2_init(void)
+static int __init tea_init(void)
 {
-    proc_create(PROC_NAME, 0, NULL, &mod2_fops);
+    proc_create(PROC_NAME, 0, NULL, &tea_fops);
     printk(KERN_INFO "Modulo 2: iniciado\n");
     return 0;
 }
 
-static void __exit mod2_exit(void)
+static void __exit tea_exit(void)
 {
     remove_proc_entry(PROC_NAME, NULL);
     printk(KERN_INFO "Modulo 2: encerrado\n");
 }
 
-module_init(mod2_init);
-module_exit(mod2_exit);
+module_init(tea_init);
+module_exit(tea_exit);
