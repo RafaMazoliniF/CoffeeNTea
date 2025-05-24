@@ -70,7 +70,7 @@ static int mod2_show(struct seq_file *m, void *v)
                 u64 delta_time = now_time - pdata->last_time;
 
                 if (delta_time > 0)
-                    cpu_percent = (delta_exec * 1000) / delta_time; // Ta em nanossegundos por isso multiplica por 1000
+                    cpu_percent = (delta_exec * 100) / delta_time; // Ta em nanossegundos por isso multiplica por 1000
                     cpu_percent /= 10;
                 //seq_printf(m, "PID: %d delta_exec: %llu delta_time: %llu cpu_percent: %lu\n", task->pid, delta_exec, delta_time, cpu_percent);
             }
