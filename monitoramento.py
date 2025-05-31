@@ -20,7 +20,7 @@ while True:
         with open("/proc/mod2", "r") as f:
             lines = f.readlines()
             for line in lines[2:]:  
-                if "Alto" in line:  # coloquei medio, pq não tinha nenhum com alto risco
+                if "Medio" in line:  # coloquei medio, pq não tinha nenhum com alto risco
                     pid = line.split()[0]
                     print(f"\n{red}Processo PID: {pid} Alto Risco{norm}")
                     with open(log_file, "a") as log:

@@ -13,8 +13,11 @@
 #include <linux/net.h>
 #include <net/sock.h>
 #include <linux/socket.h>
+#include <linux/in.h>
 
 #define PROC_NAME "mod2"
+#define BOLD_BLUE     "\x1b[1;34m"  
+#define RESET     "\x1b[0m"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Grupo 2");
@@ -55,8 +58,11 @@ static int mod2_show(struct seq_file *m, void *v)
     struct task_struct *task;
     u64 now_time = sched_clock(); 
 
-    seq_printf(m, "%-8s | %-5s | %-9s | %-9s | %-9s | %-7s | %-5s | %-5s | %s\n", "PID", "'%'CPU", "SYSCALLS", "Input", "Output", "Sockets", "Prio", "Risco", "Score");
-    seq_printf(m, "---------+--------+-----------+-----------+-----------+---------+-------+--------+--------\n");
+    seq_puts(m, "\033[2J\033[H");
+
+    // Cabeçalho com cor
+    seq_printf(m, BOLD_BLUE "%-8s | %-5s | %-9s | %-9s | %-9s | %-7s | %-5s | %-5s | %-5s | %-6s | %s\n" RESET,"PID", "%CPU", "Syscalls", "Input", "Output", "Sockets", "TCP", "UDP", "Prio", "Risco", "Score");
+    seq_printf(m, "---------+-------+-----------+-----------+-----------+---------+-------+-------+-------+--------+-------\n");
 
     for_each_process(task) {
         u64 now_exec_runtime = task->se.sum_exec_runtime;
@@ -70,9 +76,8 @@ static int mod2_show(struct seq_file *m, void *v)
                 u64 delta_time = now_time - pdata->last_time;
 
                 if (delta_time > 0)
-                    cpu_percent = (delta_exec * 100) / delta_time; // Ta em nanossegundos por isso multiplica por 1000
-                    cpu_percent /= 10;
-                //seq_printf(m, "PID: %d delta_exec: %llu delta_time: %llu cpu_percent: %lu\n", task->pid, delta_exec, delta_time, cpu_percent);
+                    cpu_percent = (delta_exec * 100) / delta_time;
+                cpu_percent /= 10;
             }
 
             pdata->last_exec_runtime = now_exec_runtime;
@@ -84,6 +89,8 @@ static int mod2_show(struct seq_file *m, void *v)
         unsigned long long read_bytes = task->ioac.read_bytes;
         unsigned long long write_bytes = task->ioac.write_bytes;
         int num_sockets = 0;
+        int num_sockets_tcp = 0;
+        int num_sockets_udp = 0;
         struct files_struct *files = task->files;
         int prioridade = task->prio;
 
@@ -93,6 +100,16 @@ static int mod2_show(struct seq_file *m, void *v)
                 struct file *f = fdt->fd[i];
 
                 if (f && S_ISSOCK(file_inode(f)->i_mode)) {
+                    struct socket *sock = SOCKET_I(file_inode(f));
+
+                    if (sock && sock->sk) {
+                        int protocol = sock->sk->sk_protocol;
+                        if (protocol == IPPROTO_TCP)
+                            num_sockets_tcp++;
+                        else if (protocol == IPPROTO_UDP)
+                            num_sockets_udp++;
+                    }
+                    
                     num_sockets++;
                 }
             }
@@ -102,53 +119,37 @@ static int mod2_show(struct seq_file *m, void *v)
         unsigned long output = write_bytes / 1000000;
         int score = 0;
 
-        if (cpu_percent >= 80) {
-            score += 2;
-        } else if (cpu_percent > 30) {
-            score += 1;
-        }
+        if (cpu_percent >= 80) score += 2;
+        else if (cpu_percent > 30) score += 1;
 
-        if (syscalls > 1000) {
-            score += 2;
-        } else if (syscalls > 100) {
-            score += 1;
-        }
+        if (syscalls > 1000) score += 2;
+        else if (syscalls > 100) score += 1;
 
-        if (input >= 10){
-            score += 2;
-        } else if (input >= 1){
-            score += 1;
-        }
-        if (output >= 10){
-            score += 2;
-        } else if (output >= 1){
-            score += 1;
-        }
+        if (input >= 10) score += 2;
+        else if (input >= 1) score += 1;
 
-        if (num_sockets > 10){
-            score += 2;
-        } else if (num_sockets >= 4){
-            score += 1;
-        }
+        if (output >= 10) score += 2;
+        else if (output >= 1) score += 1;
 
-        if (prioridade >= 62 && prioridade < 139) {
-            score += 1;
-        } else if (prioridade >= 42 && prioridade < 62) {
-            score += 2;
-        } else if (prioridade >= 0 && prioridade < 42) {
-            score += 3;
-        }
+        if (num_sockets > 10) score += 2;
+        else if (num_sockets >= 4) score += 1;
+
+        if (prioridade >= 62 && prioridade < 139) score += 1;
+        else if (prioridade >= 42 && prioridade < 62) score += 2;
+        else if (prioridade >= 0 && prioridade < 42) score += 3;
 
         const char *risco;
         if (score >= 10)
-            risco = "Alto";
+            risco = "\033[31mAlto\033[0m";
         else if (score >= 6)
-            risco = "Medio";
+            risco = "\033[33mMedio\033[0m";
         else
-            risco = "Baixo";
+            risco = "\033[32mBaixo\033[0m";
 
-        seq_printf(m, "%-8d | %-5lu | %-10lu | %-9lu | %-9lu | %-7d | %-5d | %-5s | %d\n",
-                    task->pid, cpu_percent, syscalls, input, output, num_sockets, prioridade, risco, score);
+        seq_printf(m, "%-8d | %-5lu | %-9lu | %-9lu | %-9lu | %-7d | %-5d | %-5d | %-5d | %-5s  | %d\n",
+                   task->pid, cpu_percent, syscalls, input, output,
+                   num_sockets, num_sockets_tcp, num_sockets_udp,
+                   prioridade, risco, score);
     }
 
     return 0;
@@ -188,3 +189,4 @@ static void __exit mod2_exit(void)
 
 module_init(mod2_init);
 module_exit(mod2_exit);
+
