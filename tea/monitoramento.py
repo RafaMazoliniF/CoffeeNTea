@@ -27,5 +27,5 @@ while True:
                         log.write(line)
         time.sleep(5) 
     except Exception as e:
-        print(f"Erro ao acessar /proc/mod2: {e}")
+        print(f"Erro ao acessar /proc/tea: {e}")
         time.sleep(5)
