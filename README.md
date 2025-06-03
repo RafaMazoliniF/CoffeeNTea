@@ -13,6 +13,35 @@ It asserts a score of how "dangerous" or abnormal is a process behaviour, and us
 Each of the modules has it's own directory with the source code and more detailed information.
 
 ### Execution and Compilation of the Module
+# To use the Module 1, follow the instructions below:
+KFetch is a linux kernel module that returns you yours system information, like memory usage, CPU model, uptime etc...  
+
+It is simple. Follow this guide and everything will be ok :)  
+
+### Prerequisites
+- Linux operating system installed on your host or VM;
+- I only tested on **Ubuntu** based distros with kernel **6.8.0-59-generic** (you can get your kernel version with `uname -r`);
+- Packages **build_essential** and **kmod** installed;
+
+### Compile and Run the Module
+This project has only four files: 
+- `kfetch.c`: the source code of the module;
+- `kfetch.h`: header file + some helper functions;
+- `Makefile`: compiles the module;
+- `kfetch.sh`: helper bash script that writes in and reads the character device with some usage flags;
+
+#### Compile
+```bash
+$ make
+```
+#### Run
+```bash
+$ sudo insmod kfetch.ko && sudo ./kfetch.sh
+```
+#### Stop
+```bash
+$ sudo rmmod kfetch && make clean
+```
 
 ## To use the Module 2, follow the instructions below:
 1 - Download and set up Ubuntu/Linux on VirtualBox.
@@ -23,7 +52,7 @@ sudo apt-get install linux-headers-$(uname -r)
 3 - Create a Makefile
 Create a file named Makefile in the same directory as your module with the following content:
 ```sh
-obj-m += modulo2.o
+obj-m += tea.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
@@ -32,14 +61,14 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 ```
 
-##Execute the Module:
-This will create a file named modulo2.ko:
+## Execute the Module:
+This will create a file named tea.ko:
 ```sh
 make
 ```
 Load the Module
 ```sh
-sudo insmod modulo2.ko
+sudo insmod tea.ko
 ```
 View Kernel Log
 ```sh
@@ -51,7 +80,7 @@ python3 monitoramento
 ```
 Remove the Module
 ```sh
-sudo rmmod modulo2.ko
+sudo rmmod tea.ko
 ```
 ## Features:
 In this module you will see some information about running processes.
