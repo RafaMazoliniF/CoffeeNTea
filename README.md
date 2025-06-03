@@ -12,6 +12,72 @@ It asserts a score of how "dangerous" or abnormal is a process behaviour, and us
 
 Each of the modules has it's own directory with the source code and more detailed information.
 
+### Execution and Compilation of the Module
+
+## To use the Module 2, follow the instructions below:
+1 - Download and set up Ubuntu/Linux on VirtualBox.
+2 - Install Kernel Headers, run the following command in the terminal:
+```sh
+sudo apt-get install linux-headers-$(uname -r)
+```
+3 - Create a Makefile
+Create a file named Makefile in the same directory as your module with the following content:
+```sh
+obj-m += modulo2.o
+
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+```
+
+##Execute the Module:
+This will create a file named modulo2.ko:
+```sh
+make
+```
+Load the Module
+```sh
+sudo insmod modulo2.ko
+```
+View Kernel Log
+```sh
+dmesg | tail
+``` 
+Execute the Module with an auxiliary code
+```sh
+python3 monitoramento
+```
+Remove the Module
+```sh
+sudo rmmod modulo2.ko
+```
+## Features:
+In this module you will see some information about running processes.
+Based on those informations, the module assigns a risk level: High, Medium, or Low.
+If the risk is classefied as High, the module will create a file containing the process information.
+The information displayed (both in the output and in the file) includes:
+```sh
+CPU Usage
+```
+```sh
+System Calls
+```
+```sh
+I/O Activity
+```
+```sh
+Network Traffic
+```
+```sh
+Priority
+```
+
+### Technologies Used
+![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white) ![VSCode](https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white) ![virtualbox](https://img.shields.io/badge/VirtualBox-183A61?logo=virtualbox&logoColor=white&style=for-the-badge) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+
+
 ## People
 [@andrecostamarques](https://github.com/andrecostamarques)\
 [@danchih](https://github.com/danchih)\
