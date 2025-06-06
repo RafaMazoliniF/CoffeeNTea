@@ -113,7 +113,8 @@ static int mod2_show(struct seq_file *m, void *v)
             spin_lock(&files->file_lock); // Protects access to the file table
             struct fdtable *fdt = files_fdtable(files); // files_fdtable is safe with the lock
             if (fdt) {
-                for (int i = 0; i < fdt->max_fds; i++) {
+                int i;
+                for (i = 0; i < fdt->max_fds; i++) {
                     struct file *f = fdt->fd[i];
                     if (f && S_ISSOCK(file_inode(f)->i_mode)) {
                         struct socket *sock = SOCKET_I(file_inode(f));
