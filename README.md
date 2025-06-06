@@ -72,7 +72,7 @@ sudo insmod tea.ko
 ```
 View Kernel Log
 ```sh
-dmesg | tail
+sudo dmesg | tail
 ``` 
 Execute the Module with an auxiliary code
 ```sh
