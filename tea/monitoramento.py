@@ -17,7 +17,7 @@ print("Monitorando processos de alto risco. Pressione Ctrl+C para sair.")
 
 while True:
     try:
-        with open("/proc/mod2", "r") as f:
+        with open("/proc/tea", "r") as f:
             lines = f.readlines()
             for line in lines[2:]:  
                 if "Alto" in line: 

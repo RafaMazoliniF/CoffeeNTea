@@ -15,7 +15,7 @@
 #include <linux/socket.h>
 #include <linux/in.h>
 
-#define PROC_NAME "mod2"
+#define PROC_NAME "tea"
 #define BOLD_BLUE     "\x1b[1;34m"
 #define RESET     "\x1b[0m"
 
@@ -57,9 +57,9 @@ static struct proc_cpu_data *get_proc_data(pid_t pid) {
     return entry;
 }
 
-// Main function that generates content for the /proc/mod2 file.
+// Main function that generates content for the /proc/tea file.
 // Iterates over all processes, collects metrics, and calculates a risk score.
-static int mod2_show(struct seq_file *m, void *v)
+static int tea_show(struct seq_file *m, void *v)
 {
     struct task_struct *task;
     u64 now_time = sched_clock(); // Current scheduler time, for CPU delta calculation
@@ -175,33 +175,33 @@ static int mod2_show(struct seq_file *m, void *v)
 }
 
 // Defines the open function for the /proc file.
-static int mod2_open(struct inode *inode, struct file *file)
+static int tea_open(struct inode *inode, struct file *file)
 {
-    return single_open(file, mod2_show, NULL);
+    return single_open(file, tea_show, NULL);
 }
 
-// Structure that defines the file operations for /proc/mod2.
-static const struct proc_ops mod2_fops = {
-    .proc_open = mod2_open,
+// Structure that defines the file operations for /proc/tea.
+static const struct proc_ops tea_fops = {
+    .proc_open = tea_open,
     .proc_read = seq_read,
     .proc_lseek = seq_lseek,
     .proc_release = single_release,
 };
 
 // Module initialization function.
-static int __init mod2_init(void)
+static int __init tea_init(void)
 {
-    // Creates the /proc/mod2 entry.
-    proc_create(PROC_NAME, 0, NULL, &mod2_fops);
+    // Creates the /proc/tea entry.
+    proc_create(PROC_NAME, 0, NULL, &tea_fops);
     printk(KERN_INFO "Module 2: initialized\n");
     return 0;
 }
 
 // Module finalization function.
-static void __exit mod2_exit(void)
+static void __exit tea_exit(void)
 {
     struct proc_cpu_data *entry, *tmp;
-    // Removes the /proc/mod2 entry.
+    // Removes the /proc/tea entry.
     remove_proc_entry(PROC_NAME, NULL);
 
     // Frees the memory allocated for `proc_cpu_list`.
@@ -214,5 +214,5 @@ static void __exit mod2_exit(void)
     printk(KERN_INFO "Module 2: terminated\n");
 }
 
-module_init(mod2_init);
-module_exit(mod2_exit);
+module_init(tea_init);
+module_exit(tea_exit);
