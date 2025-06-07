@@ -76,7 +76,7 @@ sudo dmesg | tail
 ``` 
 Execute the Module with an auxiliary code
 ```sh
-python3 monitoramento
+python3 monitoramento.py
 ```
 Remove the Module
 ```sh
