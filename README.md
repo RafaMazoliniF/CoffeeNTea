@@ -43,7 +43,7 @@ $ sudo insmod kfetch.ko && sudo ./kfetch.sh
 $ sudo rmmod kfetch && make clean
 ```
 
-## To use the Module 2, follow the instructions below:
+# To use the Module 2, follow the instructions below:
 1 - Download and set up Ubuntu/Linux on VirtualBox.  
 2 - Install Kernel Headers, run the following command in the terminal:
 ```sh
