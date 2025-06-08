@@ -44,7 +44,7 @@ $ sudo rmmod kfetch && make clean
 ```
 
 ## To use the Module 2, follow the instructions below:
-1 - Download and set up Ubuntu/Linux on VirtualBox.
+1 - Download and set up Ubuntu/Linux on VirtualBox.  
 2 - Install Kernel Headers, run the following command in the terminal:
 ```sh
 sudo apt-get install linux-headers-$(uname -r)
@@ -83,9 +83,9 @@ Remove the Module
 sudo rmmod tea.ko
 ```
 ## Features:
-In this module you will see some information about running processes.
-Based on those informations, the module assigns a risk level: High, Medium, or Low.
-If the risk is classefied as High, the module will create a file containing the process information.
+In this module you will see some information about running processes.  
+Based on those informations, the module assigns a risk level: High, Medium, or Low.  
+If the risk is classefied as High, the module will create a file containing the process information.  
 The information displayed (both in the output and in the file) includes:
 ```sh
 CPU Usage
